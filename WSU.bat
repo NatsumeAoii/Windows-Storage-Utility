@@ -1,142 +1,79 @@
 @echo off
-setlocal enabledelayedexpansion
-
-:: Administrative Check
-fltmc >nul 2>&1 || (
-    echo [!] Script must be run as Administrator
-    echo[&echo[!] Right-click and select "Run as administrator"
-    timeout /t 5 /nobreak >nul
-    exit /b 1
-)
-
-:: Configuration
-set "LOGDIR=%SystemDrive%\Windows\Logs\SystemRepair"
-set "LOG_TIMESTAMP=%date:~-4%-%date:~3,2%-%date:~0,2%_%time:~0,2%-%time:~3,2%"
-set "CHKDSK_LOG=%LOGDIR%\%COMPUTERNAME%_CHKDSK_%LOG_TIMESTAMP%.log"
-set "SFC_LOG=%LOGDIR%\%COMPUTERNAME%_SFC_%LOG_TIMESTAMP%.log"
-set "DISM_LOG=%LOGDIR%\%COMPUTERNAME%_DISM_%LOG_TIMESTAMP%.log"
-
-:MAIN
-cls
+title Pemeriksaan Otomatis CHKDSK, SFC, dan DISM (Dengan Konfirmasi)
 color 0A
-echo ========================================================
-echo      SYSTEM REPAIR TOOL (CHKDSK + SFC + DISM) v2.1
-echo ========================================================
-echo[&echo[Checking available drives...
-echo[&vol | find "Drive"
 
-:GET_DRIVE
-echo[&set /p "DRIVE=Enter drive letter to check (A-Z): "
-set "DRIVE=%DRIVE:~0,1%" >nul
-set "DRIVE=%DRIVE:"=%"
-set "DRIVE=%DRIVE: =%"
-if "%DRIVE%"=="" goto GET_DRIVE
-
-:: Validate drive letter
-set "DRIVE=%DRIVE%:"
-fsutil fsinfo drivetype %DRIVE% | find "Fixed" >nul || (
-    echo[&echo[!] Invalid drive or non-fixed disk: %DRIVE%
-    timeout /t 2 /nobreak >nul
-    goto GET_DRIVE
-)
-
-:: Confirmation
-:CONFIRM
-echo[&set /p "CONFIRM=Confirm check on %DRIVE% drive (Y/N): "
-if /I "%CONFIRM%"=="Y" goto PREPARE
-if /I "%CONFIRM%"=="N" goto MAIN
-goto CONFIRM
-
-:PREPARE
-if not exist "%LOGDIR%" mkdir "%LOGDIR%" >nul 2>&1
-echo[&echo[Initializing system repair...
-timeout /t 1 /nobreak >nul
-
-:: CHKDSK Execution
-:RUN_CHKDSK
-echo[&echo[=== Running CHKDSK on %DRIVE% ===]
-echo[!] This may take considerable time depending on disk size
-(
-    echo ===== CHKDSK Started: %date% %time% =====
-    chkdsk %DRIVE% /f /r /x
-    echo ===== CHKDSK Completed: %date% %time% =====
-    echo Exit Code: !errorlevel!
-) > "%CHKDSK_LOG%"
-
+:: Cek apakah dijalankan sebagai Administrator
+net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo[&echo[!] CHKDSK encountered errors (Code: %errorlevel%)
-    echo[!] Check %CHKDSK_LOG% for details
-) else (
-    echo[✓] CHKDSK completed successfully
+    echo [!] Skrip ini harus dijalankan sebagai Administrator.
+    echo [!] Klik kanan dan pilih "Run as administrator".
+    pause
+    exit /b
 )
 
-if /I "%DRIVE%"=="%SystemDrive%:" (
-    echo[&echo[!] System drive detected - CHKDSK will run at next reboot
-)
-timeout /t 2 /nobreak >nul
-
-:: SFC Execution
-:RUN_SFC
-echo[&echo[=== Running System File Checker ===]
-(
-    echo ===== SFC Started: %date% %time% =====
-    sfc /scannow
-    echo ===== SFC Completed: %date% %time% =====
-    echo Exit Code: !errorlevel!
-) > "%SFC_LOG%"
-
-if %errorlevel% neq 0 (
-    echo[&echo[!] SFC found integrity violations (Code: %errorlevel%)
-    echo[!] Review %SFC_LOG% for details
-) else (
-    echo[✓] System files verified successfully
-)
-timeout /t 2 /nobreak >nul
-
-:: DISM Execution
-:RUN_DISM
-echo[&echo[=== Running DISM Health Checks ===]
-(
-    echo ===== DISM CheckHealth: %date% %time% =====
-    DISM /Online /Cleanup-Image /CheckHealth
-    echo Exit Code: !errorlevel!
-    
-    echo[&echo ===== DISM ScanHealth: %date% %time% =====
-    DISM /Online /Cleanup-Image /ScanHealth
-    echo Exit Code: !errorlevel!
-    
-    echo[&echo ===== DISM RestoreHealth: %date% %time% =====
-    DISM /Online /Cleanup-Image /RestoreHealth /Source:repairSource\install.wim /LimitAccess
-    echo Exit Code: !errorlevel!
-    
-    echo ===== DISM Completed: %date% %time% =====
-) > "%DISM_LOG%"
-
-if %errorlevel% neq 0 (
-    echo[&echo[!] DISM repair encountered issues (Code: %errorlevel%)
-    echo[!] Check %DISM_LOG% for details
-) else (
-    echo[✓] Component store repaired successfully
-)
-
-:: Finalization
-:COMPLETE
-echo[&echo ========================================================
-echo[!] SYSTEM REPAIR COMPLETED
-echo[!] Logs saved to: %LOGDIR%
-echo[&echo[Options:
-echo[ 1. View CHKDSK Log
-echo[ 2. View SFC Log
-echo[ 3. View DISM Log
-echo[ 4. Restart Computer
-echo[ 5. Exit
+:input_drive
+cls
 echo ========================================================
+echo         PEMERIKSAAN OTOMATIS CHKDSK, SFC, DISM
+echo ========================================================
+echo.
+set /p DRIVE_LETTER=Masukkan huruf drive yang ingin diperiksa CHKDSK (misal: C, D, E): 
 
-:CHOICE
-set /p "OPTION=Enter choice (1-5): "
-if "%OPTION%"=="1" start "" notepad "%CHKDSK_LOG%"
-if "%OPTION%"=="2" start "" notepad "%SFC_LOG%"
-if "%OPTION%"=="3" start "" notepad "%DISM_LOG%"
-if "%OPTION%"=="4" shutdown /r /t 30 /c "System repair completed - restarting"
-if "%OPTION%"=="5" exit /b
-goto CHOICE
+:: Ubah ke huruf besar
+call set DRIVE_UC=%%DRIVE_LETTER:~0,1%%
+for %%A in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
+    if /I "%DRIVE_LETTER%"=="%%A" set DRIVE_UC=%%A
+)
+
+set DRIVE=%DRIVE_UC%:
+
+:: Konfirmasi input
+:confirm_input
+echo.
+echo [✓] Sistem yang akan diperiksa adalah drive: %DRIVE%
+set /p CONFIRM=Apakah sudah benar? (Y/N): 
+
+if /I "%CONFIRM%"=="Y" goto mulai_proses
+if /I "%CONFIRM%"=="N" goto input_drive
+
+echo [!] Input tidak dikenali. Harap ketik Y atau N saja.
+goto confirm_input
+
+:mulai_proses
+:: Jalankan CHKDSK
+echo.
+echo [1/4] Menjalankan CHKDSK pada drive %DRIVE% ...
+chkdsk %DRIVE% /f /r
+echo.
+echo [!] Jika ini adalah drive sistem, proses akan dijadwalkan saat restart.
+pause
+
+:: Jalankan SFC
+echo.
+echo [2/4] Menjalankan SFC (System File Checker)...
+sfc /scannow
+echo.
+echo [✓] SFC selesai dijalankan.
+pause
+
+:: Jalankan DISM
+echo.
+echo [3/4] Menjalankan DISM - CheckHealth...
+DISM /Online /Cleanup-Image /CheckHealth
+echo.
+
+echo [4/4] Menjalankan DISM - ScanHealth...
+DISM /Online /Cleanup-Image /ScanHealth
+echo.
+
+echo Menjalankan DISM - RestoreHealth...
+DISM /Online /Cleanup-Image /RestoreHealth
+echo.
+
+echo ==========================================================
+echo Semua proses selesai. Disarankan untuk merestart PC Anda.
+echo Log dapat ditemukan di:
+echo - SFC  : C:\Windows\Logs\CBS\CBS.log
+echo - DISM : C:\Windows\Logs\DISM\dism.log
+echo ==========================================================
+pause
