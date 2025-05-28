@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
 :input_drive
 cls
 echo ========================================================
-echo         PEMERIKSAAN OTOMATIS CHKDSK, SFC, DISM
+echo      WINDOWS STORAGE UTILITY (CHKDSK + SFC + DISM) v0.5
 echo ========================================================
 echo.
 set /p DRIVE_LETTER=Masukkan huruf drive yang ingin diperiksa CHKDSK (misal: C, D, E): 
