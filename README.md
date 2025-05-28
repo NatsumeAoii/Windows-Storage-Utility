@@ -52,7 +52,7 @@ With detailed filenames including:
 
 ## 🚀 How to Use
 
-1. **Right-click** the `Windows-Storage-Utility.bat` file
+1. **Right-click** the `WSU.bat` file
 2. Choose **Run as administrator**
 3. **Select target drive** from the detected volumes list
 4. **Confirm your selection** when prompted
