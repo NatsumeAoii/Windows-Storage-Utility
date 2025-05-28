@@ -24,7 +24,7 @@ cls
 color 0A
 title Automatic CHKDSK, SFC, and DISM Check (Enhanced Version)
 echo ========================================================
-echo      WINDOWS STORAGE UTILITY (CHKDSK + SFC + DISM) v1.0
+echo    WINDOWS STORAGE UTILITY (CHKDSK + SFC + DISM) v1.0
 echo ========================================================
 echo.
 echo Initializing system maintenance utility...
@@ -82,12 +82,15 @@ forfiles /p "%LOGDIR%" /m *.log /d -30 /c "cmd /c del @path" >nul 2>&1
 echo.
 echo [1/4] Running CHKDSK on drive %DRIVE% ...
 echo [!] This will show real-time progress below:
-echo [!] Estimated time: 10-30 minutes depending on drive size
+echo [!] Estimated time: 10-120 minutes depending on drive size
 echo [!] Please wait while CHKDSK analyzes %DRIVE%...
 
 echo.
 echo Running CHKDSK on Drive %DRIVE%
+echo.
+echo ========================================================
 chkdsk %DRIVE% /f /r
+echo ========================================================
 
 echo.
 echo [✓] CHKDSK completed successfully.
@@ -97,7 +100,10 @@ pause
 :RUN_SFC
 echo.
 echo [2/4] Running SFC (System File Checker)...
+echo.
+echo ========================================================
 sfc /scannow
+echo ========================================================
 
 echo.
 echo [✓] SFC completed successfully.
@@ -107,15 +113,30 @@ pause
 :RUN_DISM
 echo.
 echo [3/4] Running DISM - CheckHealth...
+echo.
+echo ========================================================
 DISM /Online /Cleanup-Image /CheckHealth
+echo ========================================================
+echo [✓] CheckHealth completed successfully.
+pause
 
 echo.
 echo [4/4] Running DISM - ScanHealth...
+echo.
+echo ========================================================
 DISM /Online /Cleanup-Image /ScanHealth
+echo ========================================================
+echo [✓] ScanHealth completed successfully.
+pause
 
 echo.
-echo Running DISM - RestoreHealth...
+echo [5/4] Running DISM - RestoreHealth...
+echo.
+echo ========================================================
 DISM /Online /Cleanup-Image /RestoreHealth
+echo ========================================================
+echo [✓] RestoreHealth completed successfully.
+pause
 
 :: Completion Summary
 :COMPLETE
