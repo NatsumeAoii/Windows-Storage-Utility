@@ -1,12 +1,12 @@
 @echo off
-title Pemeriksaan Otomatis CHKDSK, SFC, dan DISM (Dengan Konfirmasi)
+title Automatic Check: CHKDSK, SFC, and DISM (With Confirmation)
 color 0A
 
-:: Cek apakah dijalankan sebagai Administrator
+:: Check if running as Administrator
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [!] Skrip ini harus dijalankan sebagai Administrator.
-    echo [!] Klik kanan dan pilih "Run as administrator".
+    echo [!] This script must be run as Administrator.
+    echo [!] Right-click and choose "Run as administrator".
     pause
     exit /b
 )
@@ -17,9 +17,9 @@ echo ========================================================
 echo      WINDOWS STORAGE UTILITY (CHKDSK + SFC + DISM) v0.5
 echo ========================================================
 echo.
-set /p DRIVE_LETTER=Masukkan huruf drive yang ingin diperiksa CHKDSK (misal: C, D, E): 
+set /p DRIVE_LETTER=Enter the drive letter to check with CHKDSK (e.g., C, D, E): 
 
-:: Ubah ke huruf besar
+:: Convert to uppercase
 call set DRIVE_UC=%%DRIVE_LETTER:~0,1%%
 for %%A in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
     if /I "%DRIVE_LETTER%"=="%%A" set DRIVE_UC=%%A
@@ -27,52 +27,52 @@ for %%A in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
 
 set DRIVE=%DRIVE_UC%:
 
-:: Konfirmasi input
+:: Confirm input
 :confirm_input
 echo.
-echo [✓] Sistem yang akan diperiksa adalah drive: %DRIVE%
-set /p CONFIRM=Apakah sudah benar? (Y/N): 
+echo [✓] The drive to be checked is: %DRIVE%
+set /p CONFIRM=Is this correct? (Y/N): 
 
-if /I "%CONFIRM%"=="Y" goto mulai_proses
+if /I "%CONFIRM%"=="Y" goto start_process
 if /I "%CONFIRM%"=="N" goto input_drive
 
-echo [!] Input tidak dikenali. Harap ketik Y atau N saja.
+echo [!] Invalid input. Please enter Y or N only.
 goto confirm_input
 
-:mulai_proses
-:: Jalankan CHKDSK
+:start_process
+:: Run CHKDSK
 echo.
-echo [1/4] Menjalankan CHKDSK pada drive %DRIVE% ...
+echo [1/4] Running CHKDSK on drive %DRIVE% ...
 chkdsk %DRIVE% /f /r
 echo.
-echo [!] Jika ini adalah drive sistem, proses akan dijadwalkan saat restart.
+echo [!] If this is the system drive, the process will be scheduled at restart.
 pause
 
-:: Jalankan SFC
+:: Run SFC
 echo.
-echo [2/4] Menjalankan SFC (System File Checker)...
+echo [2/4] Running SFC (System File Checker)...
 sfc /scannow
 echo.
-echo [✓] SFC selesai dijalankan.
+echo [✓] SFC scan completed.
 pause
 
-:: Jalankan DISM
+:: Run DISM
 echo.
-echo [3/4] Menjalankan DISM - CheckHealth...
+echo [3/4] Running DISM - CheckHealth...
 DISM /Online /Cleanup-Image /CheckHealth
 echo.
 
-echo [4/4] Menjalankan DISM - ScanHealth...
+echo [4/4] Running DISM - ScanHealth...
 DISM /Online /Cleanup-Image /ScanHealth
 echo.
 
-echo Menjalankan DISM - RestoreHealth...
+echo Running DISM - RestoreHealth...
 DISM /Online /Cleanup-Image /RestoreHealth
 echo.
 
 echo ==========================================================
-echo Semua proses selesai. Disarankan untuk merestart PC Anda.
-echo Log dapat ditemukan di:
+echo All processes are complete. It is recommended to restart your PC.
+echo Logs can be found at:
 echo - SFC  : C:\Windows\Logs\CBS\CBS.log
 echo - DISM : C:\Windows\Logs\DISM\dism.log
 echo ==========================================================
