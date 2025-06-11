@@ -1,4 +1,4 @@
-# 🧰 Windows Storage Utility (WSU) v1.0
+# 🧰 Windows Storage Utility (WSU)
 
 **Windows Storage Utility** or **WSU** is an enhanced batch script for automating comprehensive system maintenance and repair tasks on Windows systems using built-in tools like **CHKDSK**, **SFC**, and **DISM**. It features an intuitive interface with real-time progress tracking and detailed logging capabilities.
 
